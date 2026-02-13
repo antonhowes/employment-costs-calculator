@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UK Employment Cost Calculator 2026-27</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f0f2f5;
+    color: #1a1a2e;
+    line-height: 1.5;
+    padding: 1.5rem;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 1.6rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .subtitle {
+    text-align: center;
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .input-section {
+    max-width: 520px;
+    margin: 0 auto 1.5rem;
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+
+  .input-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .input-row label {
+    font-weight: 600;
+    font-size: 0.95rem;
+    min-width: 160px;
+  }
+
+  .input-row input[type="number"] {
+    flex: 1;
+    min-width: 140px;
+    padding: 0.5rem 0.75rem;
+    border: 2px solid #d0d5dd;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    transition: border-color 0.2s;
+  }
+
+  .input-row input[type="number"]:focus {
+    outline: none;
+    border-color: #4361ee;
+  }
+
+  .toggle-group {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .toggle-btn {
+    padding: 0.35rem 0.75rem;
+    border: 2px solid #d0d5dd;
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+  }
+
+  .toggle-btn:hover { border-color: #4361ee; }
+
+  .plan-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: flex-start;
+  }
+
+  .info-btn {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #888;
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    font-style: italic;
+    line-height: 16px;
+    text-align: center;
+    cursor: help;
+    font-family: Georgia, serif;
+  }
+
+  .info-btn:hover {
+    background: #4361ee;
+  }
+
+  .info-btn:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1a2e;
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 400;
+    font-style: normal;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.4;
+    padding: 0.5rem 0.7rem;
+    border-radius: 6px;
+    width: 220px;
+    white-space: normal;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .toggle-btn.active {
+    background: #4361ee;
+    color: #fff;
+    border-color: #4361ee;
+  }
+
+  .comparison {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 640px) {
+    .comparison { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+
+  .card h2 {
+    font-size: 1.15rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 3px solid;
+  }
+
+  .card.england h2 { border-color: #e63946; }
+  .card.scotland h2 { border-color: #2563eb; }
+
+  .line {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.3rem 0;
+    font-size: 0.9rem;
+  }
+
+  .line.indent { padding-left: 1rem; color: #555; }
+
+  .expandable {
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .expandable .arrow {
+    display: inline-block;
+    font-size: 0.7rem;
+    margin-right: 0.3rem;
+    transition: transform 0.2s;
+  }
+
+  .expandable.open .arrow {
+    transform: rotate(90deg);
+  }
+
+  .breakdown {
+    display: none;
+    overflow: hidden;
+  }
+
+  .breakdown.open {
+    display: block;
+  }
+
+  .band-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    margin: 0.25rem 0 0.25rem 0;
+  }
+
+  .band-table th {
+    text-align: left;
+    padding: 0.3rem 0.4rem;
+    border-bottom: 2px solid #e8e8e8;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #888;
+  }
+
+  .band-table th:last-child,
+  .band-table td:last-child {
+    text-align: right;
+  }
+
+  .band-table th:nth-child(2),
+  .band-table td:nth-child(2) {
+    text-align: center;
+  }
+
+  .band-table td {
+    padding: 0.3rem 0.4rem;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .band-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .band-table .total-row td {
+    font-weight: 700;
+    border-top: 2px solid #e0e0e0;
+    padding-top: 0.4rem;
+  }
+
+  .line.total {
+    font-weight: 700;
+    font-size: 1rem;
+    border-top: 2px solid #e0e0e0;
+    margin-top: 0.35rem;
+    padding-top: 0.5rem;
+  }
+
+  .line.grand-total {
+    font-weight: 700;
+    font-size: 1.1rem;
+    border-top: 2px solid #e0e0e0;
+    margin-top: 0.5rem;
+    padding-top: 0.6rem;
+  }
+
+  .line .negative { color: #e63946; }
+  .line .positive { color: #2a9d8f; }
+
+  .section-label {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-top: 0.6rem;
+    margin-bottom: 0.1rem;
+  }
+
+  .diff-banner {
+    max-width: 900px;
+    margin: 1rem auto 0;
+    background: #fff;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    text-align: center;
+    font-size: 0.95rem;
+  }
+
+  .diff-banner strong { font-size: 1.05rem; }
+  .country-england { color: #e63946; font-weight: 700; }
+  .country-scotland { color: #2563eb; font-weight: 700; }
+
+  .chart-section {
+    max-width: 900px;
+    margin: 1rem auto 0;
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+
+  .chart-section canvas {
+    width: 100%;
+    height: auto;
+    cursor: crosshair;
+  }
+
+  .note {
+    max-width: 900px;
+    margin: 1rem auto 0;
+    font-size: 0.78rem;
+    color: #888;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<h1>UK Employment Cost Calculator</h1>
+<p class="subtitle">2026-27 Tax Year &mdash; England vs Scotland</p>
+
+<div class="input-section">
+  <div class="input-row">
+    <label>Calculate from</label>
+    <div class="toggle-group">
+      <button class="toggle-btn active" data-mode="takehome">Take-home pay</button>
+      <button class="toggle-btn" data-mode="gross">Gross salary</button>
+    </div>
+  </div>
+  <div class="input-row">
+    <label for="salaryInput" id="salaryLabel">Desired take-home pay</label>
+    <input type="number" id="salaryInput" value="30000" min="0" step="500">
+  </div>
+  <div class="input-row">
+    <label>Undergraduate loan</label>
+    <div class="toggle-group">
+      <button class="toggle-btn active" data-plan="none">None</button>
+      <span class="plan-wrapper">
+        <button class="toggle-btn" data-plan="2">Plan 2</button>
+        <span class="info-btn" data-tooltip="England &amp; Wales students who started university between September 2012 and July 2023. Repay 9% of income above £28,470.">i</span>
+      </span>
+      <span class="plan-wrapper">
+        <button class="toggle-btn" data-plan="4">Plan 4</button>
+        <span class="info-btn" data-tooltip="Scottish students (undergraduate loans from SAAS). Repay 9% of income above £32,745.">i</span>
+      </span>
+      <span class="plan-wrapper">
+        <button class="toggle-btn" data-plan="5">Plan 5</button>
+        <span class="info-btn" data-tooltip="England &amp; Wales students who started university from September 2023. Repay 9% of income above £25,000.">i</span>
+      </span>
+    </div>
+  </div>
+  <div class="input-row">
+    <label>Postgraduate loan</label>
+    <div class="toggle-group">
+      <button class="toggle-btn active" data-pgl="none" id="pgl-none">None</button>
+      <span class="plan-wrapper">
+        <button class="toggle-btn" data-pgl="pgl" id="pgl-yes">Postgraduate</button>
+        <span class="info-btn" data-tooltip="Master's (from 2016) or Doctoral (from 2018) loans. Repay 6% of income above £21,000. Repaid in addition to any undergraduate loan.">i</span>
+      </span>
+    </div>
+  </div>
+</div>
+
+<div class="comparison">
+  <div class="card england" id="england-card"></div>
+  <div class="card scotland" id="scotland-card"></div>
+</div>
+
+<div class="diff-banner" id="diff-banner"></div>
+
+<div class="chart-section" id="chart-section">
+  <h2 style="text-align:center;font-size:1.15rem;margin-bottom:0.75rem;">Total Employment Cost by Take-Home Pay</h2>
+  <canvas id="chart" width="900" height="400"></canvas>
+</div>
+
+<p class="note">
+  Assumes standard personal allowance with taper above £100k. Does not include pension contributions,
+  benefits in kind, or other salary sacrifice arrangements.
+</p>
+
+<script>
+const $ = id => document.getElementById(id);
+const fmt = n => '£' + Math.round(n).toLocaleString('en-GB');
+
+// ── Tax helpers ──
+
+// Bands defined as [label, cumulativeLower, cumulativeUpper, rate]
+// (cumulative limits on taxable income above Personal Allowance)
+const englandBands = [
+  ['Basic rate (20%)',      0,      37700,   0.20],
+  ['Higher rate (40%)',     37700,  125140,  0.40],
+  ['Additional rate (45%)', 125140, Infinity, 0.45],
+];
+
+const scotlandBands = [
+  ['Starter rate (19%)',      0,      3967,    0.19],
+  ['Basic rate (20%)',        3967,   16956,   0.20],
+  ['Intermediate rate (21%)', 16956,  31092,   0.21],
+  ['Higher rate (42%)',       31092,  62430,   0.42],
+  ['Advanced rate (45%)',     62430,  125140,  0.45],
+  ['Top rate (48%)',          125140, Infinity, 0.48],
+];
+
+function calcIncomeTax(gross, bands) {
+  const pa = personalAllowance(gross);
+  const taxableIncome = Math.max(0, gross - pa);
+
+  const breakdown = [{ label: 'Personal Allowance', taxable: pa, tax: 0, rate: 0 }];
+  let totalTax = 0;
+  let sumTaxable = pa;
+
+  for (let i = 0; i < bands.length; i++) {
+    const label = bands[i][0];
+    const lower = bands[i][1];
+    const upper = bands[i][2];
+    const rate  = bands[i][3];
+
+    if (taxableIncome <= lower) {
+      breakdown.push({ label, taxable: 0, tax: 0, rate });
+      continue;
+    }
+
+    const isLastActiveBand = (upper === Infinity || taxableIncome <= upper);
+    let taxable;
+    if (isLastActiveBand) {
+      taxable = gross - sumTaxable;
+    } else {
+      taxable = upper - lower;
+    }
+    if (taxable < 0) taxable = 0;
+    sumTaxable += taxable;
+    const tax = taxable * rate;
+    totalTax += tax;
+    breakdown.push({ label, taxable, tax, rate });
+  }
+
+  return { totalTax, breakdown, pa, taxableIncome };
+}
+
+function englandIncomeTax(gross) {
+  return calcIncomeTax(gross, englandBands).totalTax;
+}
+
+function scotlandIncomeTax(gross) {
+  return calcIncomeTax(gross, scotlandBands).totalTax;
+}
+
+function personalAllowance(gross) {
+  if (gross <= 100000) return 12570;
+  if (gross >= 125140) return 0;
+  return Math.max(0, 12570 - Math.floor((gross - 100000) / 2));
+}
+
+function employeeNI(gross) {
+  const lower = 12570;
+  const upper = 50270;
+  if (gross <= lower) return 0;
+  const band1 = Math.min(gross, upper) - lower;
+  const band2 = Math.max(0, gross - upper);
+  return band1 * 0.08 + band2 * 0.02;
+}
+
+function studentLoan(gross, plan) {
+  if (plan === 'none') return 0;
+  const thresholds = { '2': 28470, '4': 32745, '5': 25000 };
+  const t = thresholds[plan];
+  return gross > t ? (gross - t) * 0.09 : 0;
+}
+
+function postgraduateLoan(gross, hasPgl) {
+  if (!hasPgl) return 0;
+  const threshold = 21000;
+  return gross > threshold ? (gross - threshold) * 0.06 : 0;
+}
+
+function employerNI(gross) {
+  const threshold = 5000;
+  return gross > threshold ? (gross - threshold) * 0.15 : 0;
+}
+
+// ── Reverse calculation: find gross from desired net ──
+// Net = Gross - IncomeTax(Gross) - EmployeeNI(Gross) - StudentLoan(Gross)
+// We solve via bisection.
+
+function findGross(targetNet, taxFn, slPlan, hasPgl) {
+  let lo = targetNet;
+  let hi = targetNet * 3 + 20000;
+
+  for (let i = 0; i < 200; i++) {
+    const mid = (lo + hi) / 2;
+    const net = mid - taxFn(mid) - employeeNI(mid) - studentLoan(mid, slPlan) - postgraduateLoan(mid, hasPgl);
+    if (Math.abs(net - targetNet) < 0.01) return mid;
+    if (net < targetNet) lo = mid; else hi = mid;
+  }
+  return (lo + hi) / 2;
+}
+
+// ── Render ──
+
+function renderCard(containerId, label, gross, bands, slPlan, hasPgl) {
+  const taxDetail = calcIncomeTax(gross, bands);
+  const incomeTax = taxDetail.totalTax;
+  const pa = taxDetail.pa;
+  const ni = employeeNI(gross);
+  const sl = studentLoan(gross, slPlan);
+  const pgl = postgraduateLoan(gross, hasPgl);
+  const net = gross - incomeTax - ni - sl - pgl;
+  const erni = employerNI(gross);
+  const totalCost = gross + erni;
+
+  const fmtD = n => n.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  // ── Inline breakdown builders ──
+
+  function miniTable(rows) {
+    return `<table class="band-table"><tr><th>Band</th><th>Rate</th><th>Taxable</th><th>Cost</th></tr>${rows}</table>`;
+  }
+
+  // Income tax breakdown
+  let taxRows = '';
+  for (const b of taxDetail.breakdown) {
+    const pct = (b.rate * 100).toFixed(0);
+    taxRows += `<tr><td>${b.label}</td><td>${pct}%</td><td>&pound;${fmtD(b.taxable)}</td><td>&pound;${fmtD(b.tax)}</td></tr>`;
+  }
+  let taxNote = '';
+  if (gross > 100000 && gross < 125140) {
+    const reduction = Math.floor((gross - 100000) / 2);
+    taxNote = `<div style="font-size:0.75rem;color:#888;margin-top:0.2rem;">PA reduced by &pound;${fmtD(reduction)} (taper: &pound;1 lost per &pound;2 over &pound;100,000)</div>`;
+  } else if (gross >= 125140) {
+    taxNote = `<div style="font-size:0.75rem;color:#888;margin-top:0.2rem;">PA fully tapered to &pound;0 (income over &pound;125,140)</div>`;
+  }
+  const taxBreakdown = miniTable(taxRows) + taxNote;
+
+  // Employee NI breakdown
+  const niLower = 12570, niUpper = 50270;
+  const niBand1 = gross > niLower ? Math.min(gross, niUpper) - niLower : 0;
+  const niBand2 = Math.max(0, gross - niUpper);
+  let niRows = '';
+  if (niBand1 > 0) niRows += `<tr><td>&pound;12,570 &ndash; &pound;50,270</td><td>8%</td><td>&pound;${fmtD(niBand1)}</td><td>&pound;${fmtD(niBand1 * 0.08)}</td></tr>`;
+  if (niBand2 > 0) niRows += `<tr><td>Above &pound;50,270</td><td>2%</td><td>&pound;${fmtD(niBand2)}</td><td>&pound;${fmtD(niBand2 * 0.02)}</td></tr>`;
+  if (!niRows) niRows = `<tr><td>Below threshold</td><td>8%</td><td>&pound;0.00</td><td>&pound;0.00</td></tr>`;
+  const niBreakdown = miniTable(niRows);
+
+  // Employer NI breakdown
+  let erniRows = '';
+  if (gross > 5000) {
+    erniRows = `<tr><td>Above &pound;5,000</td><td>15%</td><td>&pound;${fmtD(gross - 5000)}</td><td>&pound;${fmtD(erni)}</td></tr>`;
+  } else {
+    erniRows = `<tr><td>Below threshold</td><td>15%</td><td>&pound;0.00</td><td>&pound;0.00</td></tr>`;
+  }
+  const erniBreakdown = miniTable(erniRows);
+
+  // Student loan breakdown
+  let slBreakdownHtml = '';
+  if (slPlan !== 'none') {
+    const slThresholds = { '2': 28470, '4': 32745, '5': 25000 };
+    const slT = slThresholds[slPlan];
+    let slRows = '';
+    if (gross > slT) {
+      slRows = `<tr><td>Above &pound;${slT.toLocaleString('en-GB')}</td><td>9%</td><td>&pound;${fmtD(gross - slT)}</td><td>&pound;${fmtD(sl)}</td></tr>`;
+    } else {
+      slRows = `<tr><td>Below threshold</td><td>9%</td><td>&pound;0.00</td><td>&pound;0.00</td></tr>`;
+    }
+    slBreakdownHtml = miniTable(slRows);
+  }
+
+  // Postgraduate loan breakdown
+  let pglBreakdownHtml = '';
+  if (hasPgl) {
+    const pglT = 21000;
+    let pglRows = '';
+    if (gross > pglT) {
+      pglRows = `<tr><td>Above &pound;${pglT.toLocaleString('en-GB')}</td><td>6%</td><td>&pound;${fmtD(gross - pglT)}</td><td>&pound;${fmtD(pgl)}</td></tr>`;
+    } else {
+      pglRows = `<tr><td>Below threshold</td><td>6%</td><td>&pound;0.00</td><td>&pound;0.00</td></tr>`;
+    }
+    pglBreakdownHtml = miniTable(pglRows);
+  }
+
+  const overhead = totalCost - net;
+  const overheadPct = totalCost > 0 ? ((overhead / totalCost) * 100).toFixed(1) : '0.0';
+
+  const el = $(containerId);
+  el.innerHTML = `
+    <h2>${label}</h2>
+    <div class="line total"><span>Take-home pay</span><span class="positive">${fmt(net)}</span></div>
+
+    <div class="line indent expandable" data-toggle="income-tax">
+      <span><span class="arrow">&#9654;</span>Income tax</span><span>+${fmt(incomeTax)}</span>
+    </div>
+    <div class="breakdown" data-panel="income-tax">${taxBreakdown}</div>
+
+    <div class="line indent expandable" data-toggle="employee-ni">
+      <span><span class="arrow">&#9654;</span>Employee NI</span><span>+${fmt(ni)}</span>
+    </div>
+    <div class="breakdown" data-panel="employee-ni">${niBreakdown}</div>
+
+    ${slPlan !== 'none' ? `
+    <div class="line indent expandable" data-toggle="student-loan">
+      <span><span class="arrow">&#9654;</span>Student loan (Plan ${slPlan})</span><span>+${fmt(sl)}</span>
+    </div>
+    <div class="breakdown" data-panel="student-loan">${slBreakdownHtml}</div>
+    ` : ''}
+
+    ${hasPgl ? `
+    <div class="line indent expandable" data-toggle="pgl">
+      <span><span class="arrow">&#9654;</span>Postgraduate loan</span><span>+${fmt(pgl)}</span>
+    </div>
+    <div class="breakdown" data-panel="pgl">${pglBreakdownHtml}</div>
+    ` : ''}
+
+    <div class="line" style="font-weight:700"><span>Gross salary</span><span>${fmt(gross)}</span></div>
+
+    <div class="line indent expandable" data-toggle="employer-ni">
+      <span><span class="arrow">&#9654;</span>Employer NI</span><span>+${fmt(erni)}</span>
+    </div>
+    <div class="breakdown" data-panel="employer-ni">${erniBreakdown}</div>
+
+    <div class="line grand-total"><span>Total employment cost</span><span>${fmt(totalCost)}</span></div>
+    <div class="line" style="font-weight:700;font-size:0.95rem;margin-top:0.25rem;color:#e63946;"><span>Total deductions</span><span>${fmt(overhead)} (${overheadPct}%)</span></div>
+  `;
+
+  return { totalCost, net };
+}
+
+function wireUpExpandables() {
+  // Clicking any expandable toggles ALL expandables and panels
+  document.querySelectorAll('.expandable').forEach(toggle => {
+    toggle.addEventListener('click', () => {
+      const isOpen = toggle.classList.contains('open');
+      const allToggles = document.querySelectorAll('.expandable');
+      const allPanels = document.querySelectorAll('.breakdown');
+
+      allToggles.forEach(t => t.classList.toggle('open', !isOpen));
+      allPanels.forEach(p => p.classList.toggle('open', !isOpen));
+    });
+  });
+}
+
+function countrySpan(name) {
+  const cls = name === 'England' ? 'country-england' : 'country-scotland';
+  return `<span class="${cls}">${name}</span>`;
+}
+
+function getMode() {
+  return document.querySelector('[data-mode].active').dataset.mode;
+}
+
+function calculate() {
+  const inputVal = parseFloat($('salaryInput').value) || 0;
+  const slPlan = document.querySelector('[data-plan].active').dataset.plan;
+  const hasPgl = document.querySelector('[data-pgl].active').dataset.pgl === 'pgl';
+  const mode = getMode();
+
+  let engGross, scoGross;
+  if (mode === 'gross') {
+    engGross = inputVal;
+    scoGross = inputVal;
+  } else {
+    engGross = findGross(inputVal, englandIncomeTax, slPlan, hasPgl);
+    scoGross = findGross(inputVal, scotlandIncomeTax, slPlan, hasPgl);
+  }
+
+  const eng = renderCard('england-card', 'England', engGross, englandBands, slPlan, hasPgl);
+  const sco = renderCard('scotland-card', 'Scotland', scoGross, scotlandBands, slPlan, hasPgl);
+
+  wireUpExpandables();
+
+  if (mode === 'gross') {
+    const diff = Math.abs(eng.net - sco.net);
+    const worse = eng.net > sco.net ? 'Scotland' : 'England';
+    if (diff < 1) {
+      $('diff-banner').innerHTML = `<strong>No difference</strong> in take-home pay.`;
+    } else {
+      const lower = Math.min(eng.net, sco.net);
+      const pct = lower > 0 ? ((diff / lower) * 100).toFixed(1) : '0.0';
+      $('diff-banner').innerHTML = `<strong>In ${countrySpan(worse)} a worker takes home ${fmt(diff)} less (${pct}%)</strong> on a gross salary of ${fmt(inputVal)}.`;
+    }
+  } else {
+    const diff = Math.abs(eng.totalCost - sco.totalCost);
+    const dearer = eng.totalCost < sco.totalCost ? 'Scotland' : 'England';
+    if (diff < 1) {
+      $('diff-banner').innerHTML = `<strong>No difference</strong> in total employment cost.`;
+    } else {
+      const cheaper = Math.min(eng.totalCost, sco.totalCost);
+      const pct = ((diff / cheaper) * 100).toFixed(1);
+      $('diff-banner').innerHTML = `<strong>In ${countrySpan(dearer)} it costs ${fmt(diff)} more (${pct}%)</strong> for an employee to take home ${fmt(inputVal)}.`;
+    }
+  }
+
+  drawChart(slPlan, hasPgl, inputVal);
+}
+
+// ── Chart ──
+
+let chartData = { points: [], niceMax: 0, maxX: 100000, pad: {}, W: 0, H: 400, plotW: 0, plotH: 0, mode: 'takehome', step: 1000 };
+
+function drawChart(slPlan, hasPgl, currentInput) {
+  const mode = getMode();
+  const canvas = $('chart');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  const W = rect.width - 48;
+  const H = 400;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+
+  const pad = { top: 20, right: 20, bottom: 50, left: 70 };
+  const plotW = W - pad.left - pad.right;
+  const plotH = H - pad.top - pad.bottom;
+  const maxX = 100000;
+  const step = 1000;
+
+  // Compute data points
+  const points = [];
+  let maxY = 0;
+
+  for (let x = 0; x <= maxX; x += step) {
+    let engGross, scoGross;
+    if (mode === 'gross') {
+      engGross = x;
+      scoGross = x;
+    } else {
+      engGross = x === 0 ? 0 : findGross(x, englandIncomeTax, slPlan, hasPgl);
+      scoGross = x === 0 ? 0 : findGross(x, scotlandIncomeTax, slPlan, hasPgl);
+    }
+    const engCost = engGross + employerNI(engGross);
+    const scoCost = scoGross + employerNI(scoGross);
+
+    if (mode === 'gross') {
+      const engNet = engGross - englandIncomeTax(engGross) - employeeNI(engGross) - studentLoan(engGross, slPlan) - postgraduateLoan(engGross, hasPgl);
+      const scoNet = scoGross - scotlandIncomeTax(scoGross) - employeeNI(scoGross) - studentLoan(scoGross, slPlan) - postgraduateLoan(scoGross, hasPgl);
+      maxY = Math.max(maxY, engNet, scoNet);
+      points.push({ x, engY: engNet, scoY: scoNet });
+    } else {
+      maxY = Math.max(maxY, engCost, scoCost);
+      points.push({ x, engY: engCost, scoY: scoCost });
+    }
+  }
+
+  const niceMax = Math.ceil(maxY / 25000) * 25000;
+
+  // Update chart title
+  const titleEl = $('chart-section').querySelector('h2');
+  titleEl.textContent = mode === 'gross'
+    ? 'Take-Home Pay by Gross Salary'
+    : 'Total Employment Cost by Take-Home Pay';
+
+  Object.assign(chartData, { points, niceMax, maxX, pad, W, H, plotW, plotH, mode, step });
+
+  renderChart(currentInput, -1);
+}
+
+function renderChart(currentInput, hoverX) {
+  const { points, niceMax, maxX, pad, W, H, plotW, plotH, mode, step } = chartData;
+  const canvas = $('chart');
+  const dpr = window.devicePixelRatio || 1;
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  function xPos(v) { return pad.left + (v / maxX) * plotW; }
+  function yPos(v) { return pad.top + plotH - (v / niceMax) * plotH; }
+  const xLabel = mode === 'gross' ? 'Gross salary' : 'Desired take-home pay';
+  const yLabel = mode === 'gross' ? 'Take-home pay' : 'Total employment cost';
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Grid
+  ctx.strokeStyle = '#e8e8e8';
+  ctx.lineWidth = 1;
+  ctx.fillStyle = '#888';
+  ctx.font = '11px -apple-system, BlinkMacSystemFont, sans-serif';
+  ctx.textAlign = 'right';
+
+  const ySteps = 5;
+  const yInterval = niceMax / ySteps;
+  for (let i = 0; i <= ySteps; i++) {
+    const val = i * yInterval;
+    const y = yPos(val);
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(W - pad.right, y);
+    ctx.stroke();
+    ctx.fillText('£' + (val / 1000).toFixed(0) + 'k', pad.left - 8, y + 4);
+  }
+
+  ctx.textAlign = 'center';
+  const xInterval = 10000;
+  for (let v = 0; v <= maxX; v += xInterval) {
+    const x = xPos(v);
+    ctx.beginPath();
+    ctx.moveTo(x, pad.top);
+    ctx.lineTo(x, pad.top + plotH);
+    ctx.stroke();
+    ctx.fillText('£' + (v / 1000).toFixed(0) + 'k', x, H - pad.bottom + 18);
+  }
+
+  // Axis labels
+  ctx.fillStyle = '#555';
+  ctx.font = '12px -apple-system, BlinkMacSystemFont, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(xLabel, pad.left + plotW / 2, H - 5);
+
+  ctx.save();
+  ctx.translate(14, pad.top + plotH / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText(yLabel, 0, 0);
+  ctx.restore();
+
+  // Current input marker
+  if (currentInput > 0 && currentInput <= maxX) {
+    const mx = xPos(currentInput);
+    ctx.strokeStyle = '#ccc';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(mx, pad.top);
+    ctx.lineTo(mx, pad.top + plotH);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // Lines
+  function drawLine(color, key) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    for (let i = 0; i < points.length; i++) {
+      const x = xPos(points[i].x);
+      const y = yPos(points[i][key]);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+
+  drawLine('#e63946', 'engY');
+  drawLine('#2563eb', 'scoY');
+
+  // Legend
+  const legY = pad.top + 10;
+  const legX = pad.left + 10;
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = '#e63946';
+  ctx.beginPath(); ctx.moveTo(legX, legY); ctx.lineTo(legX + 24, legY); ctx.stroke();
+  ctx.fillStyle = '#333';
+  ctx.font = '12px -apple-system, BlinkMacSystemFont, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('England', legX + 30, legY + 4);
+  ctx.strokeStyle = '#2563eb';
+  ctx.beginPath(); ctx.moveTo(legX, legY + 20); ctx.lineTo(legX + 24, legY + 20); ctx.stroke();
+  ctx.fillText('Scotland', legX + 30, legY + 24);
+
+  // Hover crosshair + tooltip
+  if (hoverX >= 0 && hoverX <= maxX) {
+    // Find nearest point
+    const idx = Math.round(hoverX / step);
+    const p = points[Math.min(idx, points.length - 1)];
+    if (!p) return;
+
+    const hx = xPos(p.x);
+    const eyP = yPos(p.engY);
+    const syP = yPos(p.scoY);
+
+    // Vertical line
+    ctx.strokeStyle = '#aaa';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([2, 2]);
+    ctx.beginPath();
+    ctx.moveTo(hx, pad.top);
+    ctx.lineTo(hx, pad.top + plotH);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Dots
+    ctx.fillStyle = '#e63946';
+    ctx.beginPath(); ctx.arc(hx, eyP, 4, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#2563eb';
+    ctx.beginPath(); ctx.arc(hx, syP, 4, 0, Math.PI * 2); ctx.fill();
+
+    // Tooltip
+    const diff = Math.abs(p.engY - p.scoY);
+    const base = Math.min(p.engY, p.scoY);
+    const pct = base > 0 ? ((diff / base) * 100).toFixed(1) : '0.0';
+
+    const inputLabel = mode === 'gross' ? 'Gross salary' : 'Take-home';
+    const valLabel = mode === 'gross' ? 'Take-home' : 'Emp. cost';
+    const lines = [
+      `${inputLabel}: ${fmt(p.x)}`,
+      `England ${valLabel}: ${fmt(p.engY)}`,
+      `Scotland ${valLabel}: ${fmt(p.scoY)}`,
+    ];
+    if (diff >= 1) {
+      if (mode === 'gross') {
+        const worse = p.engY < p.scoY ? 'England' : 'Scotland';
+        lines.push(`${worse} \u2212${fmt(diff)} (${pct}%)`);
+      } else {
+        const dearer = p.engY > p.scoY ? 'England' : 'Scotland';
+        lines.push(`${dearer} +${fmt(diff)} (${pct}%)`);
+      }
+    }
+
+    ctx.font = '11px -apple-system, BlinkMacSystemFont, sans-serif';
+    const lineH = 16;
+    const boldIdx = 3;
+    const tw = Math.max(...lines.map(l => ctx.measureText(l).width));
+    const boxW = tw + 20;
+    const boxH = lines.length * lineH + 12;
+
+    let tx = hx + 12;
+    if (tx + boxW > W - pad.right) tx = hx - boxW - 12;
+    let ty = Math.min(eyP, syP) - boxH / 2;
+    ty = Math.max(pad.top, Math.min(ty, pad.top + plotH - boxH));
+
+    ctx.fillStyle = 'rgba(255,255,255,0.95)';
+    ctx.strokeStyle = '#ccc';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(tx, ty, boxW, boxH, 6);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.textAlign = 'left';
+    for (let i = 0; i < lines.length; i++) {
+      ctx.fillStyle = '#333';
+      ctx.font = (i === boldIdx) ? 'bold 11px -apple-system, BlinkMacSystemFont, sans-serif' : '11px -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.fillText(lines[i], tx + 10, ty + 14 + i * lineH);
+    }
+  }
+}
+
+// Hover handler
+$('chart').addEventListener('mousemove', (e) => {
+  const { pad, maxX, plotW, points } = chartData;
+  if (!points.length) return;
+  const rect = e.target.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const xVal = ((mx - pad.left) / plotW) * maxX;
+  const currentInput = parseFloat($('salaryInput').value) || 0;
+  if (xVal >= 0 && xVal <= maxX) {
+    renderChart(currentInput, xVal);
+  }
+});
+
+$('chart').addEventListener('mouseleave', () => {
+  const currentInput = parseFloat($('salaryInput').value) || 0;
+  renderChart(currentInput, -1);
+});
+
+// ── Events ──
+
+$('salaryInput').addEventListener('input', calculate);
+
+// Mode toggle
+document.querySelectorAll('[data-mode]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-mode]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    $('salaryLabel').textContent = btn.dataset.mode === 'gross' ? 'Gross salary' : 'Desired take-home pay';
+    calculate();
+  });
+});
+
+// Undergraduate loan toggles
+document.querySelectorAll('[data-plan]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-plan]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    calculate();
+  });
+});
+
+// Postgraduate loan toggles
+document.querySelectorAll('[data-pgl]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-pgl]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    calculate();
+  });
+});
+
+calculate();
+</script>
+</body>
+</html>
