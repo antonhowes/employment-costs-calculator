@@ -21,13 +21,6 @@
     margin-bottom: 0.25rem;
   }
 
-  .subtitle {
-    text-align: center;
-    color: #666;
-    font-size: 0.9rem;
-    margin-bottom: 1.5rem;
-  }
-
   .input-section {
     max-width: 480px;
     margin: 0 auto 1.5rem;
@@ -318,7 +311,6 @@
 <body>
 
 <h1>UK Employment Cost Calculator</h1>
-<p class="subtitle" id="subtitle">2026-27 Tax Year &mdash; England vs Scotland</p>
 
 <div class="input-section">
   <div class="input-row">
@@ -1352,11 +1344,12 @@ function drawYearChart(inputVal, slPlan, hasPgl, isLarge) {
 
   // Title
   const titleEl = $('year-chart-title');
+  const fmtInput = fmt(inputVal);
   titleEl.textContent = mode === 'gross'
-    ? 'Take-Home Pay by Tax Year'
+    ? `Take-home pay by tax year for a gross salary of ${fmtInput}`
     : mode === 'cost'
-    ? 'Take-Home Pay by Tax Year'
-    : 'Total Employment Cost by Tax Year';
+    ? `Take-home pay by tax year for an employment cost of ${fmtInput}`
+    : `Total employment cost by tax year for a take-home pay of ${fmtInput}`;
 
   const yearKeys = Object.keys(TAX_YEARS);
   const points = [];
@@ -1632,7 +1625,6 @@ document.querySelectorAll('[data-year]').forEach(btn => {
     document.querySelectorAll('[data-year]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     const c = TAX_YEARS[btn.dataset.year];
-    $('subtitle').innerHTML = c.label + ' Tax Year &mdash; England vs Scotland';
     // Hide plans for years where they don't apply
     const hasPlan4 = '4' in c.slThresholds;
     $('plan4-wrapper').style.display = hasPlan4 ? '' : 'none';
