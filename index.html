@@ -29,7 +29,7 @@
   }
 
   .input-section {
-    max-width: 520px;
+    max-width: 480px;
     margin: 0 auto 1.5rem;
     background: #fff;
     border-radius: 12px;
@@ -38,23 +38,26 @@
   }
 
   .input-row {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 0.75rem;
-    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+
+  .input-row:last-child {
+    margin-bottom: 0;
   }
 
   .input-row label {
+    display: block;
     font-weight: 600;
-    font-size: 0.95rem;
-    min-width: 160px;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #555;
+    margin-bottom: 0.4rem;
   }
 
   .input-row input[type="number"] {
-    flex: 1;
-    min-width: 140px;
-    padding: 0.5rem 0.75rem;
+    width: 100%;
+    padding: 0.6rem 0.75rem;
     border: 2px solid #d0d5dd;
     border-radius: 8px;
     font-size: 1.1rem;
@@ -68,7 +71,7 @@
 
   .toggle-group {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.4rem;
     flex-wrap: wrap;
   }
 
@@ -315,35 +318,55 @@
 <body>
 
 <h1>UK Employment Cost Calculator</h1>
-<p class="subtitle">2026-27 Tax Year &mdash; England vs Scotland</p>
+<p class="subtitle" id="subtitle">2026-27 Tax Year &mdash; England vs Scotland</p>
 
 <div class="input-section">
+  <div class="input-row">
+    <label>Tax year</label>
+    <div class="toggle-group">
+      <button class="toggle-btn" data-year="2018">2018/19</button>
+      <button class="toggle-btn" data-year="2019">2019/20</button>
+      <button class="toggle-btn" data-year="2020">2020/21</button>
+      <button class="toggle-btn" data-year="2021">2021/22</button>
+      <button class="toggle-btn" data-year="2022">2022/23</button>
+      <button class="toggle-btn" data-year="2023">2023/24</button>
+      <button class="toggle-btn" data-year="2024">2024/25</button>
+      <button class="toggle-btn" data-year="2025">2025/26</button>
+      <button class="toggle-btn active" data-year="2026">2026/27</button>
+    </div>
+  </div>
   <div class="input-row">
     <label>Calculate from</label>
     <div class="toggle-group">
       <button class="toggle-btn active" data-mode="takehome">Take-home pay</button>
       <button class="toggle-btn" data-mode="gross">Gross salary</button>
+      <button class="toggle-btn" data-mode="cost">Employment cost</button>
     </div>
   </div>
   <div class="input-row">
-    <label for="salaryInput" id="salaryLabel">Desired take-home pay</label>
-    <input type="number" id="salaryInput" value="30000" min="0" step="500">
+    <label for="salaryInput" id="salaryLabel">Desired take-home pay (per year)</label>
+    <input type="number" id="salaryInput" value="40000" min="0" step="500">
   </div>
+  <hr style="border:none;border-top:1px solid #e8e8e8;margin:0.25rem 0 1rem;">
   <div class="input-row">
     <label>Undergraduate loan</label>
     <div class="toggle-group">
       <button class="toggle-btn active" data-plan="none">None</button>
       <span class="plan-wrapper">
+        <button class="toggle-btn" data-plan="1">Plan 1</button>
+        <span class="info-btn" id="info-plan1" data-tooltip="">i</span>
+      </span>
+      <span class="plan-wrapper">
         <button class="toggle-btn" data-plan="2">Plan 2</button>
-        <span class="info-btn" data-tooltip="England &amp; Wales students who started university between September 2012 and July 2023. Repay 9% of income above £28,470.">i</span>
+        <span class="info-btn" id="info-plan2" data-tooltip="">i</span>
       </span>
-      <span class="plan-wrapper">
+      <span class="plan-wrapper" id="plan4-wrapper">
         <button class="toggle-btn" data-plan="4">Plan 4</button>
-        <span class="info-btn" data-tooltip="Scottish students (undergraduate loans from SAAS). Repay 9% of income above £32,745.">i</span>
+        <span class="info-btn" id="info-plan4" data-tooltip="">i</span>
       </span>
-      <span class="plan-wrapper">
+      <span class="plan-wrapper" id="plan5-wrapper">
         <button class="toggle-btn" data-plan="5">Plan 5</button>
-        <span class="info-btn" data-tooltip="England &amp; Wales students who started university from September 2023. Repay 9% of income above £25,000.">i</span>
+        <span class="info-btn" id="info-plan5" data-tooltip="">i</span>
       </span>
     </div>
   </div>
@@ -354,6 +377,15 @@
       <span class="plan-wrapper">
         <button class="toggle-btn" data-pgl="pgl" id="pgl-yes">Postgraduate</button>
         <span class="info-btn" data-tooltip="Master's (from 2016) or Doctoral (from 2018) loans. Repay 6% of income above £21,000. Repaid in addition to any undergraduate loan.">i</span>
+      </span>
+    </div>
+  </div>
+  <div class="input-row">
+    <label>Employer size</label>
+    <div class="toggle-group">
+      <span class="plan-wrapper">
+        <button class="toggle-btn" data-employer="small" id="small-employer">Small employer</button>
+        <span class="info-btn" data-tooltip="Annual pay bill under £3 million. Removes the 0.5% Apprenticeship Levy.">i</span>
       </span>
     </div>
   </div>
@@ -371,33 +403,220 @@
   <canvas id="chart" width="900" height="400"></canvas>
 </div>
 
+<div class="chart-section" id="year-chart-section">
+  <h2 id="year-chart-title" style="text-align:center;font-size:1.15rem;margin-bottom:0.75rem;">Total Employment Cost by Tax Year</h2>
+  <canvas id="yearChart" width="900" height="350"></canvas>
+</div>
+
 <p class="note">
-  Assumes standard personal allowance with taper above £100k. Does not include pension contributions,
-  benefits in kind, or other salary sacrifice arrangements.
+  Assumes standard personal allowance with taper above £100k. Does not include
+  benefits in kind or other salary sacrifice arrangements. Does not account for differences in the cost of living.
+  NI figures for 2022/23 and 2023/24 are approximate due to mid-year rate changes.
 </p>
 
 <script>
 const $ = id => document.getElementById(id);
 const fmt = n => '£' + Math.round(n).toLocaleString('en-GB');
 
-// ── Tax helpers ──
+// ── Tax year configurations ──
+// Bands: [label, cumulativeLower, cumulativeUpper, rate]
 
-// Bands defined as [label, cumulativeLower, cumulativeUpper, rate]
-// (cumulative limits on taxable income above Personal Allowance)
-const englandBands = [
-  ['Basic rate (20%)',      0,      37700,   0.20],
-  ['Higher rate (40%)',     37700,  125140,  0.40],
-  ['Additional rate (45%)', 125140, Infinity, 0.45],
-];
+const TAX_YEARS = {
+  '2018': {
+    label: '2018/19',
+    pa: 11850,
+    englandBands: [
+      ['Basic rate (20%)',      0,      34500,   0.20],
+      ['Higher rate (40%)',     34500,  150000,  0.40],
+      ['Additional rate (45%)', 150000, Infinity, 0.45],
+    ],
+    scotlandBands: [
+      ['Starter rate (19%)',      0,      2000,    0.19],
+      ['Basic rate (20%)',        2000,   12150,   0.20],
+      ['Intermediate rate (21%)', 12150,  31580,   0.21],
+      ['Higher rate (41%)',       31580,  150000,  0.41],
+      ['Top rate (46%)',          150000, Infinity, 0.46],
+    ],
+    empNI: { pt: 8424, uel: 46350, r1: 0.12, r2: 0.02 },
+    erNI:  { st: 8424, rate: 0.138 },
+    slThresholds: { '1': 18330, '2': 25000 },
+    pension: { lower: 6032, upper: 46350, empRate: 0.03, erRate: 0.02 },
+    hasPlan5: false,
+  },
+  '2019': {
+    label: '2019/20',
+    pa: 12500,
+    englandBands: [
+      ['Basic rate (20%)',      0,      37500,   0.20],
+      ['Higher rate (40%)',     37500,  150000,  0.40],
+      ['Additional rate (45%)', 150000, Infinity, 0.45],
+    ],
+    scotlandBands: [
+      ['Starter rate (19%)',      0,      2049,    0.19],
+      ['Basic rate (20%)',        2049,   12444,   0.20],
+      ['Intermediate rate (21%)', 12444,  30930,   0.21],
+      ['Higher rate (41%)',       30930,  150000,  0.41],
+      ['Top rate (46%)',          150000, Infinity, 0.46],
+    ],
+    empNI: { pt: 8632, uel: 50000, r1: 0.12, r2: 0.02 },
+    erNI:  { st: 8632, rate: 0.138 },
+    slThresholds: { '1': 18935, '2': 25725 },
+    pension: { lower: 6136, upper: 50000, empRate: 0.05, erRate: 0.03 },
+    hasPlan5: false,
+  },
+  '2020': {
+    label: '2020/21',
+    pa: 12500,
+    englandBands: [
+      ['Basic rate (20%)',      0,      37700,   0.20],
+      ['Higher rate (40%)',     37700,  150000,  0.40],
+      ['Additional rate (45%)', 150000, Infinity, 0.45],
+    ],
+    scotlandBands: [
+      ['Starter rate (19%)',      0,      2085,    0.19],
+      ['Basic rate (20%)',        2085,   12658,   0.20],
+      ['Intermediate rate (21%)', 12658,  30930,   0.21],
+      ['Higher rate (41%)',       30930,  150000,  0.41],
+      ['Top rate (46%)',          150000, Infinity, 0.46],
+    ],
+    empNI: { pt: 9500, uel: 50000, r1: 0.12, r2: 0.02 },
+    erNI:  { st: 8788, rate: 0.138 },
+    slThresholds: { '1': 19390, '2': 26575 },
+    pension: { lower: 6240, upper: 50000, empRate: 0.05, erRate: 0.03 },
+    hasPlan5: false,
+  },
+  '2021': {
+    label: '2021/22',
+    pa: 12570,
+    englandBands: [
+      ['Basic rate (20%)',      0,      37700,   0.20],
+      ['Higher rate (40%)',     37700,  150000,  0.40],
+      ['Additional rate (45%)', 150000, Infinity, 0.45],
+    ],
+    scotlandBands: [
+      ['Starter rate (19%)',      0,      2097,    0.19],
+      ['Basic rate (20%)',        2097,   12726,   0.20],
+      ['Intermediate rate (21%)', 12726,  31092,   0.21],
+      ['Higher rate (41%)',       31092,  150000,  0.41],
+      ['Top rate (46%)',          150000, Infinity, 0.46],
+    ],
+    empNI: { pt: 9568, uel: 50270, r1: 0.12, r2: 0.02 },
+    erNI:  { st: 8840, rate: 0.138 },
+    slThresholds: { '1': 19895, '2': 27295, '4': 25000 },
+    pension: { lower: 6240, upper: 50270, empRate: 0.05, erRate: 0.03 },
+    hasPlan5: false,
+  },
+  '2022': {
+    label: '2022/23',
+    pa: 12570,
+    englandBands: [
+      ['Basic rate (20%)',      0,      37700,   0.20],
+      ['Higher rate (40%)',     37700,  150000,  0.40],
+      ['Additional rate (45%)', 150000, Infinity, 0.45],
+    ],
+    scotlandBands: [
+      ['Starter rate (19%)',      0,      2162,    0.19],
+      ['Basic rate (20%)',        2162,   13118,   0.20],
+      ['Intermediate rate (21%)', 13118,  31092,   0.21],
+      ['Higher rate (41%)',       31092,  150000,  0.41],
+      ['Top rate (46%)',          150000, Infinity, 0.46],
+    ],
+    empNI: { pt: 12570, uel: 50270, r1: 0.12, r2: 0.02 },
+    erNI:  { st: 9100, rate: 0.138 },
+    slThresholds: { '1': 20195, '2': 27295, '4': 25375 },
+    pension: { lower: 6240, upper: 50270, empRate: 0.05, erRate: 0.03 },
+    hasPlan5: false,
+  },
+  '2023': {
+    label: '2023/24',
+    pa: 12570,
+    englandBands: [
+      ['Basic rate (20%)',      0,      37700,   0.20],
+      ['Higher rate (40%)',     37700,  125140,  0.40],
+      ['Additional rate (45%)', 125140, Infinity, 0.45],
+    ],
+    scotlandBands: [
+      ['Starter rate (19%)',      0,      2162,    0.19],
+      ['Basic rate (20%)',        2162,   13118,   0.20],
+      ['Intermediate rate (21%)', 13118,  31092,   0.21],
+      ['Higher rate (42%)',       31092,  125140,  0.42],
+      ['Top rate (47%)',          125140, Infinity, 0.47],
+    ],
+    empNI: { pt: 12570, uel: 50270, r1: 0.12, r2: 0.02 },
+    erNI:  { st: 9100, rate: 0.138 },
+    slThresholds: { '1': 22015, '2': 27295, '4': 27660 },
+    pension: { lower: 6240, upper: 50270, empRate: 0.05, erRate: 0.03 },
+    hasPlan5: false,
+  },
+  '2024': {
+    label: '2024/25',
+    pa: 12570,
+    englandBands: [
+      ['Basic rate (20%)',      0,      37700,   0.20],
+      ['Higher rate (40%)',     37700,  125140,  0.40],
+      ['Additional rate (45%)', 125140, Infinity, 0.45],
+    ],
+    scotlandBands: [
+      ['Starter rate (19%)',      0,      2306,    0.19],
+      ['Basic rate (20%)',        2306,   13991,   0.20],
+      ['Intermediate rate (21%)', 13991,  31092,   0.21],
+      ['Higher rate (42%)',       31092,  62430,   0.42],
+      ['Advanced rate (45%)',     62430,  125140,  0.45],
+      ['Top rate (48%)',          125140, Infinity, 0.48],
+    ],
+    empNI: { pt: 12570, uel: 50270, r1: 0.08, r2: 0.02 },
+    erNI:  { st: 9100, rate: 0.138 },
+    slThresholds: { '1': 24990, '2': 27295, '4': 31395 },
+    pension: { lower: 6240, upper: 50270, empRate: 0.05, erRate: 0.03 },
+    hasPlan5: false,
+  },
+  '2025': {
+    label: '2025/26',
+    pa: 12570,
+    englandBands: [
+      ['Basic rate (20%)',      0,      37700,   0.20],
+      ['Higher rate (40%)',     37700,  125140,  0.40],
+      ['Additional rate (45%)', 125140, Infinity, 0.45],
+    ],
+    scotlandBands: [
+      ['Starter rate (19%)',      0,      2827,    0.19],
+      ['Basic rate (20%)',        2827,   14921,   0.20],
+      ['Intermediate rate (21%)', 14921,  31092,   0.21],
+      ['Higher rate (42%)',       31092,  62430,   0.42],
+      ['Advanced rate (45%)',     62430,  125140,  0.45],
+      ['Top rate (48%)',          125140, Infinity, 0.48],
+    ],
+    empNI: { pt: 12570, uel: 50270, r1: 0.08, r2: 0.02 },
+    erNI:  { st: 5000, rate: 0.15 },
+    slThresholds: { '1': 26065, '2': 28470, '4': 32745 },
+    pension: { lower: 6240, upper: 50270, empRate: 0.05, erRate: 0.03 },
+    hasPlan5: false,
+  },
+  '2026': {
+    label: '2026/27',
+    pa: 12570,
+    englandBands: [
+      ['Basic rate (20%)',      0,      37700,   0.20],
+      ['Higher rate (40%)',     37700,  125140,  0.40],
+      ['Additional rate (45%)', 125140, Infinity, 0.45],
+    ],
+    scotlandBands: [
+      ['Starter rate (19%)',      0,      3967,    0.19],
+      ['Basic rate (20%)',        3967,   16956,   0.20],
+      ['Intermediate rate (21%)', 16956,  31092,   0.21],
+      ['Higher rate (42%)',       31092,  62430,   0.42],
+      ['Advanced rate (45%)',     62430,  125140,  0.45],
+      ['Top rate (48%)',          125140, Infinity, 0.48],
+    ],
+    empNI: { pt: 12570, uel: 50270, r1: 0.08, r2: 0.02 },
+    erNI:  { st: 5000, rate: 0.15 },
+    slThresholds: { '1': 26065, '2': 29385, '4': 33795, '5': 25000 },
+    pension: { lower: 6240, upper: 50270, empRate: 0.05, erRate: 0.03 },
+    hasPlan5: true,
+  },
+};
 
-const scotlandBands = [
-  ['Starter rate (19%)',      0,      3967,    0.19],
-  ['Basic rate (20%)',        3967,   16956,   0.20],
-  ['Intermediate rate (21%)', 16956,  31092,   0.21],
-  ['Higher rate (42%)',       31092,  62430,   0.42],
-  ['Advanced rate (45%)',     62430,  125140,  0.45],
-  ['Top rate (48%)',          125140, Infinity, 0.48],
-];
+function cfg() { return TAX_YEARS[getYear()]; }
 
 function calcIncomeTax(gross, bands) {
   const pa = personalAllowance(gross);
@@ -436,32 +655,33 @@ function calcIncomeTax(gross, bands) {
 }
 
 function englandIncomeTax(gross) {
-  return calcIncomeTax(gross, englandBands).totalTax;
+  return calcIncomeTax(gross, cfg().englandBands).totalTax;
 }
 
 function scotlandIncomeTax(gross) {
-  return calcIncomeTax(gross, scotlandBands).totalTax;
+  return calcIncomeTax(gross, cfg().scotlandBands).totalTax;
 }
 
 function personalAllowance(gross) {
-  if (gross <= 100000) return 12570;
-  if (gross >= 125140) return 0;
-  return Math.max(0, 12570 - Math.floor((gross - 100000) / 2));
+  const pa = cfg().pa;
+  const taperEnd = 100000 + pa * 2;
+  if (gross <= 100000) return pa;
+  if (gross >= taperEnd) return 0;
+  return Math.max(0, pa - Math.floor((gross - 100000) / 2));
 }
 
 function employeeNI(gross) {
-  const lower = 12570;
-  const upper = 50270;
-  if (gross <= lower) return 0;
-  const band1 = Math.min(gross, upper) - lower;
-  const band2 = Math.max(0, gross - upper);
-  return band1 * 0.08 + band2 * 0.02;
+  const c = cfg().empNI;
+  if (gross <= c.pt) return 0;
+  const band1 = Math.min(gross, c.uel) - c.pt;
+  const band2 = Math.max(0, gross - c.uel);
+  return band1 * c.r1 + band2 * c.r2;
 }
 
 function studentLoan(gross, plan) {
   if (plan === 'none') return 0;
-  const thresholds = { '2': 28470, '4': 32745, '5': 25000 };
-  const t = thresholds[plan];
+  const t = cfg().slThresholds[plan];
+  if (!t) return 0;
   return gross > t ? (gross - t) * 0.09 : 0;
 }
 
@@ -472,8 +692,26 @@ function postgraduateLoan(gross, hasPgl) {
 }
 
 function employerNI(gross) {
-  const threshold = 5000;
-  return gross > threshold ? (gross - threshold) * 0.15 : 0;
+  const c = cfg().erNI;
+  return gross > c.st ? (gross - c.st) * c.rate : 0;
+}
+
+function apprenticeshipLevy(gross, isLarge) {
+  return isLarge ? gross * 0.005 : 0;
+}
+
+function qualifyingEarnings(gross) {
+  const p = cfg().pension;
+  if (gross <= p.lower) return 0;
+  return Math.min(gross, p.upper) - p.lower;
+}
+
+function employeePension(gross) {
+  return qualifyingEarnings(gross) * cfg().pension.empRate;
+}
+
+function employerPension(gross) {
+  return qualifyingEarnings(gross) * cfg().pension.erRate;
 }
 
 // ── Reverse calculation: find gross from desired net ──
@@ -486,25 +724,41 @@ function findGross(targetNet, taxFn, slPlan, hasPgl) {
 
   for (let i = 0; i < 200; i++) {
     const mid = (lo + hi) / 2;
-    const net = mid - taxFn(mid) - employeeNI(mid) - studentLoan(mid, slPlan) - postgraduateLoan(mid, hasPgl);
+    const net = mid - taxFn(mid) - employeeNI(mid) - studentLoan(mid, slPlan) - postgraduateLoan(mid, hasPgl) - employeePension(mid);
     if (Math.abs(net - targetNet) < 0.01) return mid;
     if (net < targetNet) lo = mid; else hi = mid;
   }
   return (lo + hi) / 2;
 }
 
+function findGrossFromCost(targetCost, taxFn, slPlan, hasPgl, isLarge) {
+  let lo = 0;
+  let hi = targetCost;
+
+  for (let i = 0; i < 200; i++) {
+    const mid = (lo + hi) / 2;
+    const cost = mid + employerNI(mid) + apprenticeshipLevy(mid, isLarge) + employerPension(mid);
+    if (Math.abs(cost - targetCost) < 0.01) return mid;
+    if (cost < targetCost) lo = mid; else hi = mid;
+  }
+  return (lo + hi) / 2;
+}
+
 // ── Render ──
 
-function renderCard(containerId, label, gross, bands, slPlan, hasPgl) {
+function renderCard(containerId, label, gross, bands, slPlan, hasPgl, isLarge) {
   const taxDetail = calcIncomeTax(gross, bands);
   const incomeTax = taxDetail.totalTax;
   const pa = taxDetail.pa;
   const ni = employeeNI(gross);
   const sl = studentLoan(gross, slPlan);
   const pgl = postgraduateLoan(gross, hasPgl);
-  const net = gross - incomeTax - ni - sl - pgl;
+  const empPension = employeePension(gross);
+  const erPension = employerPension(gross);
+  const net = gross - incomeTax - ni - sl - pgl - empPension;
   const erni = employerNI(gross);
-  const totalCost = gross + erni;
+  const levy = apprenticeshipLevy(gross, isLarge);
+  const totalCost = gross + erni + levy + erPension;
 
   const fmtD = n => n.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -520,39 +774,50 @@ function renderCard(containerId, label, gross, bands, slPlan, hasPgl) {
     const pct = (b.rate * 100).toFixed(0);
     taxRows += `<tr><td>${b.label}</td><td>${pct}%</td><td>&pound;${fmtD(b.taxable)}</td><td>&pound;${fmtD(b.tax)}</td></tr>`;
   }
+  const taperEnd = 100000 + cfg().pa * 2;
   let taxNote = '';
-  if (gross > 100000 && gross < 125140) {
+  if (gross > 100000 && gross < taperEnd) {
     const reduction = Math.floor((gross - 100000) / 2);
     taxNote = `<div style="font-size:0.75rem;color:#888;margin-top:0.2rem;">PA reduced by &pound;${fmtD(reduction)} (taper: &pound;1 lost per &pound;2 over &pound;100,000)</div>`;
-  } else if (gross >= 125140) {
-    taxNote = `<div style="font-size:0.75rem;color:#888;margin-top:0.2rem;">PA fully tapered to &pound;0 (income over &pound;125,140)</div>`;
+  } else if (gross >= taperEnd) {
+    taxNote = `<div style="font-size:0.75rem;color:#888;margin-top:0.2rem;">PA fully tapered to &pound;0 (income over &pound;${taperEnd.toLocaleString('en-GB')})</div>`;
   }
   const taxBreakdown = miniTable(taxRows) + taxNote;
 
   // Employee NI breakdown
-  const niLower = 12570, niUpper = 50270;
-  const niBand1 = gross > niLower ? Math.min(gross, niUpper) - niLower : 0;
-  const niBand2 = Math.max(0, gross - niUpper);
+  const niC = cfg().empNI;
+  const niBand1 = gross > niC.pt ? Math.min(gross, niC.uel) - niC.pt : 0;
+  const niBand2 = Math.max(0, gross - niC.uel);
+  const r1Pct = (niC.r1 * 100).toFixed(0);
+  const r2Pct = (niC.r2 * 100).toFixed(0);
   let niRows = '';
-  if (niBand1 > 0) niRows += `<tr><td>&pound;12,570 &ndash; &pound;50,270</td><td>8%</td><td>&pound;${fmtD(niBand1)}</td><td>&pound;${fmtD(niBand1 * 0.08)}</td></tr>`;
-  if (niBand2 > 0) niRows += `<tr><td>Above &pound;50,270</td><td>2%</td><td>&pound;${fmtD(niBand2)}</td><td>&pound;${fmtD(niBand2 * 0.02)}</td></tr>`;
-  if (!niRows) niRows = `<tr><td>Below threshold</td><td>8%</td><td>&pound;0.00</td><td>&pound;0.00</td></tr>`;
+  if (niBand1 > 0) niRows += `<tr><td>&pound;${niC.pt.toLocaleString('en-GB')} &ndash; &pound;${niC.uel.toLocaleString('en-GB')}</td><td>${r1Pct}%</td><td>&pound;${fmtD(niBand1)}</td><td>&pound;${fmtD(niBand1 * niC.r1)}</td></tr>`;
+  if (niBand2 > 0) niRows += `<tr><td>Above &pound;${niC.uel.toLocaleString('en-GB')}</td><td>${r2Pct}%</td><td>&pound;${fmtD(niBand2)}</td><td>&pound;${fmtD(niBand2 * niC.r2)}</td></tr>`;
+  if (!niRows) niRows = `<tr><td>Below threshold</td><td>${r1Pct}%</td><td>&pound;0.00</td><td>&pound;0.00</td></tr>`;
   const niBreakdown = miniTable(niRows);
 
   // Employer NI breakdown
+  const erC = cfg().erNI;
+  const erPct = (erC.rate * 100).toFixed(1).replace(/\.0$/, '');
   let erniRows = '';
-  if (gross > 5000) {
-    erniRows = `<tr><td>Above &pound;5,000</td><td>15%</td><td>&pound;${fmtD(gross - 5000)}</td><td>&pound;${fmtD(erni)}</td></tr>`;
+  if (gross > erC.st) {
+    erniRows = `<tr><td>Above &pound;${erC.st.toLocaleString('en-GB')}</td><td>${erPct}%</td><td>&pound;${fmtD(gross - erC.st)}</td><td>&pound;${fmtD(erni)}</td></tr>`;
   } else {
-    erniRows = `<tr><td>Below threshold</td><td>15%</td><td>&pound;0.00</td><td>&pound;0.00</td></tr>`;
+    erniRows = `<tr><td>Below threshold</td><td>${erPct}%</td><td>&pound;0.00</td><td>&pound;0.00</td></tr>`;
   }
   const erniBreakdown = miniTable(erniRows);
+
+  // Apprenticeship Levy breakdown
+  let levyBreakdownHtml = '';
+  if (isLarge) {
+    const levyRows = `<tr><td>Gross salary</td><td>0.5%</td><td>&pound;${fmtD(gross)}</td><td>&pound;${fmtD(levy)}</td></tr>`;
+    levyBreakdownHtml = miniTable(levyRows);
+  }
 
   // Student loan breakdown
   let slBreakdownHtml = '';
   if (slPlan !== 'none') {
-    const slThresholds = { '2': 28470, '4': 32745, '5': 25000 };
-    const slT = slThresholds[slPlan];
+    const slT = cfg().slThresholds[slPlan];
     let slRows = '';
     if (gross > slT) {
       slRows = `<tr><td>Above &pound;${slT.toLocaleString('en-GB')}</td><td>9%</td><td>&pound;${fmtD(gross - slT)}</td><td>&pound;${fmtD(sl)}</td></tr>`;
@@ -575,13 +840,37 @@ function renderCard(containerId, label, gross, bands, slPlan, hasPgl) {
     pglBreakdownHtml = miniTable(pglRows);
   }
 
+  // Employee pension breakdown
+  const penC = cfg().pension;
+  const penLowerFmt = penC.lower.toLocaleString('en-GB');
+  const penUpperFmt = penC.upper.toLocaleString('en-GB');
+  const qe = qualifyingEarnings(gross);
+  const empPenPct = (penC.empRate * 100).toFixed(0);
+  const erPenPct = (penC.erRate * 100).toFixed(0);
+  let empPensionRows = '';
+  if (qe > 0) {
+    empPensionRows = `<tr><td>&pound;${penLowerFmt} &ndash; &pound;${penUpperFmt}</td><td>${empPenPct}%</td><td>&pound;${fmtD(qe)}</td><td>&pound;${fmtD(empPension)}</td></tr>`;
+  } else {
+    empPensionRows = `<tr><td>Below threshold</td><td>${empPenPct}%</td><td>&pound;0.00</td><td>&pound;0.00</td></tr>`;
+  }
+  const empPensionBreakdown = miniTable(empPensionRows);
+
+  // Employer pension breakdown
+  let erPensionRows = '';
+  if (qe > 0) {
+    erPensionRows = `<tr><td>&pound;${penLowerFmt} &ndash; &pound;${penUpperFmt}</td><td>${erPenPct}%</td><td>&pound;${fmtD(qe)}</td><td>&pound;${fmtD(erPension)}</td></tr>`;
+  } else {
+    erPensionRows = `<tr><td>Below threshold</td><td>${erPenPct}%</td><td>&pound;0.00</td><td>&pound;0.00</td></tr>`;
+  }
+  const erPensionBreakdown = miniTable(erPensionRows);
+
   const overhead = totalCost - net;
   const overheadPct = totalCost > 0 ? ((overhead / totalCost) * 100).toFixed(1) : '0.0';
 
   const el = $(containerId);
   el.innerHTML = `
     <h2>${label}</h2>
-    <div class="line total"><span>Take-home pay</span><span class="positive">${fmt(net)}</span></div>
+    <div class="line total"><span>Take-home pay</span><span class="positive">${fmt(net)} <span style="font-size:0.75em;font-weight:400;color:#666">(${fmt(net / 12)}/mo)</span></span></div>
 
     <div class="line indent expandable" data-toggle="income-tax">
       <span><span class="arrow">&#9654;</span>Income tax</span><span>+${fmt(incomeTax)}</span>
@@ -607,30 +896,73 @@ function renderCard(containerId, label, gross, bands, slPlan, hasPgl) {
     <div class="breakdown" data-panel="pgl">${pglBreakdownHtml}</div>
     ` : ''}
 
-    <div class="line" style="font-weight:700"><span>Gross salary</span><span>${fmt(gross)}</span></div>
+    <div class="line indent expandable" data-toggle="employee-pension">
+      <span><span class="arrow">&#9654;</span>Employee pension (${empPenPct}%)</span><span>+${fmt(empPension)}</span>
+    </div>
+    <div class="breakdown" data-panel="employee-pension">${empPensionBreakdown}</div>
+
+    <div class="line" style="font-weight:700"><span>Gross salary</span><span>${fmt(gross)} <span style="font-size:0.75em;font-weight:400;color:#666">(${fmt(gross / 12)}/mo)</span></span></div>
 
     <div class="line indent expandable" data-toggle="employer-ni">
       <span><span class="arrow">&#9654;</span>Employer NI</span><span>+${fmt(erni)}</span>
     </div>
     <div class="breakdown" data-panel="employer-ni">${erniBreakdown}</div>
 
-    <div class="line grand-total"><span>Total employment cost</span><span>${fmt(totalCost)}</span></div>
+    <div class="line indent expandable" data-toggle="employer-pension">
+      <span><span class="arrow">&#9654;</span>Employer pension (${erPenPct}%)</span><span>+${fmt(erPension)}</span>
+    </div>
+    <div class="breakdown" data-panel="employer-pension">${erPensionBreakdown}</div>
+
+    ${isLarge ? `
+    <div class="line indent expandable" data-toggle="apprenticeship-levy">
+      <span><span class="arrow">&#9654;</span>Apprenticeship Levy</span><span>+${fmt(levy)}</span>
+    </div>
+    <div class="breakdown" data-panel="apprenticeship-levy">${levyBreakdownHtml}</div>
+    ` : ''}
+
+    <div class="line grand-total"><span>Total employment cost</span><span>${fmt(totalCost)} <span style="font-size:0.75em;font-weight:400;color:#666">(${fmt(totalCost / 12)}/mo)</span></span></div>
     <div class="line" style="font-weight:700;font-size:0.95rem;margin-top:0.25rem;color:#e63946;"><span>Total deductions</span><span>${fmt(overhead)} (${overheadPct}%)</span></div>
   `;
 
   return { totalCost, net };
 }
 
-function wireUpExpandables() {
-  // Clicking any expandable toggles ALL expandables and panels
-  document.querySelectorAll('.expandable').forEach(toggle => {
-    toggle.addEventListener('click', () => {
-      const isOpen = toggle.classList.contains('open');
-      const allToggles = document.querySelectorAll('.expandable');
-      const allPanels = document.querySelectorAll('.breakdown');
+let _expandedState = false;
 
-      allToggles.forEach(t => t.classList.toggle('open', !isOpen));
-      allPanels.forEach(p => p.classList.toggle('open', !isOpen));
+function syncBreakdownHeights() {
+  // For each panel type, find matching panels in both cards and sync their heights
+  const panelTypes = ['income-tax', 'employee-ni', 'employer-ni', 'student-loan', 'pgl', 'employee-pension', 'employer-pension', 'apprenticeship-levy'];
+  for (const type of panelTypes) {
+    const panels = document.querySelectorAll(`[data-panel="${type}"]`);
+    // Reset heights first
+    panels.forEach(p => p.style.minHeight = '');
+    if (_expandedState && panels.length === 2) {
+      const h0 = panels[0].scrollHeight;
+      const h1 = panels[1].scrollHeight;
+      const maxH = Math.max(h0, h1);
+      panels.forEach(p => p.style.minHeight = maxH + 'px');
+    }
+  }
+}
+
+function wireUpExpandables() {
+  const allToggles = document.querySelectorAll('.expandable');
+  const allPanels = document.querySelectorAll('.breakdown');
+
+  // Restore state from previous render
+  if (_expandedState) {
+    allToggles.forEach(t => t.classList.add('open'));
+    allPanels.forEach(p => p.classList.add('open'));
+  }
+  syncBreakdownHeights();
+
+  // Clicking any expandable toggles ALL expandables and panels
+  allToggles.forEach(toggle => {
+    toggle.addEventListener('click', () => {
+      _expandedState = !_expandedState;
+      document.querySelectorAll('.expandable').forEach(t => t.classList.toggle('open', _expandedState));
+      document.querySelectorAll('.breakdown').forEach(p => p.classList.toggle('open', _expandedState));
+      syncBreakdownHeights();
     });
   });
 }
@@ -644,23 +976,48 @@ function getMode() {
   return document.querySelector('[data-mode].active').dataset.mode;
 }
 
+let _yearOverride = null;
+function getYear() {
+  return _yearOverride || document.querySelector('[data-year].active').dataset.year;
+}
+
+function updateTooltips() {
+  const c = cfg();
+  const sl = c.slThresholds;
+  const fmtT = n => '£' + n.toLocaleString('en-GB');
+  $('info-plan1').dataset.tooltip = `Students who started their course before 1 September 2012. Repay 9% of income above ${fmtT(sl['1'])}.`;
+  $('info-plan2').dataset.tooltip = `England & Wales students who started university between September 2012 and July 2023. Repay 9% of income above ${fmtT(sl['2'])}.`;
+  if (sl['4']) {
+    $('info-plan4').dataset.tooltip = `Scottish students (undergraduate loans from SAAS). Repay 9% of income above ${fmtT(sl['4'])}.`;
+  }
+  if (c.hasPlan5) {
+    $('info-plan5').dataset.tooltip = `England & Wales students who started university from September 2023. Repay 9% of income above ${fmtT(sl['5'])}.`;
+  }
+}
+
 function calculate() {
+  updateTooltips();
   const inputVal = parseFloat($('salaryInput').value) || 0;
   const slPlan = document.querySelector('[data-plan].active').dataset.plan;
   const hasPgl = document.querySelector('[data-pgl].active').dataset.pgl === 'pgl';
+  const isLarge = !$('small-employer').classList.contains('active');
   const mode = getMode();
 
   let engGross, scoGross;
   if (mode === 'gross') {
     engGross = inputVal;
     scoGross = inputVal;
+  } else if (mode === 'cost') {
+    engGross = findGrossFromCost(inputVal, englandIncomeTax, slPlan, hasPgl, isLarge);
+    scoGross = findGrossFromCost(inputVal, scotlandIncomeTax, slPlan, hasPgl, isLarge);
   } else {
     engGross = findGross(inputVal, englandIncomeTax, slPlan, hasPgl);
     scoGross = findGross(inputVal, scotlandIncomeTax, slPlan, hasPgl);
   }
 
-  const eng = renderCard('england-card', 'England', engGross, englandBands, slPlan, hasPgl);
-  const sco = renderCard('scotland-card', 'Scotland', scoGross, scotlandBands, slPlan, hasPgl);
+  const c = cfg();
+  const eng = renderCard('england-card', 'England, Wales & Northern Ireland', engGross, c.englandBands, slPlan, hasPgl, isLarge);
+  const sco = renderCard('scotland-card', 'Scotland', scoGross, c.scotlandBands, slPlan, hasPgl, isLarge);
 
   wireUpExpandables();
 
@@ -674,6 +1031,16 @@ function calculate() {
       const pct = lower > 0 ? ((diff / lower) * 100).toFixed(1) : '0.0';
       $('diff-banner').innerHTML = `<strong>In ${countrySpan(worse)} a worker takes home ${fmt(diff)} less (${pct}%)</strong> on a gross salary of ${fmt(inputVal)}.`;
     }
+  } else if (mode === 'cost') {
+    const netDiff = Math.abs(eng.net - sco.net);
+    const worse = eng.net > sco.net ? 'Scotland' : 'England';
+    if (netDiff < 1) {
+      $('diff-banner').innerHTML = `<strong>No difference</strong> in take-home pay.`;
+    } else {
+      const lowerNet = Math.min(eng.net, sco.net);
+      const netPct = lowerNet > 0 ? ((netDiff / lowerNet) * 100).toFixed(1) : '0.0';
+      $('diff-banner').innerHTML = `<strong>In ${countrySpan(worse)} a worker takes home ${fmt(netDiff)} less (${netPct}%)</strong> for an employment cost of ${fmt(inputVal)}.`;
+    }
   } else {
     const diff = Math.abs(eng.totalCost - sco.totalCost);
     const dearer = eng.totalCost < sco.totalCost ? 'Scotland' : 'England';
@@ -686,14 +1053,15 @@ function calculate() {
     }
   }
 
-  drawChart(slPlan, hasPgl, inputVal);
+  drawChart(slPlan, hasPgl, isLarge, inputVal);
+  drawYearChart(inputVal, slPlan, hasPgl, isLarge);
 }
 
 // ── Chart ──
 
 let chartData = { points: [], niceMax: 0, maxX: 100000, pad: {}, W: 0, H: 400, plotW: 0, plotH: 0, mode: 'takehome', step: 1000 };
 
-function drawChart(slPlan, hasPgl, currentInput) {
+function drawChart(slPlan, hasPgl, isLarge, currentInput) {
   const mode = getMode();
   const canvas = $('chart');
   const dpr = window.devicePixelRatio || 1;
@@ -708,7 +1076,7 @@ function drawChart(slPlan, hasPgl, currentInput) {
   const pad = { top: 20, right: 20, bottom: 50, left: 70 };
   const plotW = W - pad.left - pad.right;
   const plotH = H - pad.top - pad.bottom;
-  const maxX = 100000;
+  const maxX = mode === 'cost' ? 300000 : 100000;
   const step = 1000;
 
   // Compute data points
@@ -720,19 +1088,27 @@ function drawChart(slPlan, hasPgl, currentInput) {
     if (mode === 'gross') {
       engGross = x;
       scoGross = x;
+    } else if (mode === 'cost') {
+      engGross = x === 0 ? 0 : findGrossFromCost(x, englandIncomeTax, slPlan, hasPgl, isLarge);
+      scoGross = x === 0 ? 0 : findGrossFromCost(x, scotlandIncomeTax, slPlan, hasPgl, isLarge);
     } else {
       engGross = x === 0 ? 0 : findGross(x, englandIncomeTax, slPlan, hasPgl);
       scoGross = x === 0 ? 0 : findGross(x, scotlandIncomeTax, slPlan, hasPgl);
     }
-    const engCost = engGross + employerNI(engGross);
-    const scoCost = scoGross + employerNI(scoGross);
 
     if (mode === 'gross') {
-      const engNet = engGross - englandIncomeTax(engGross) - employeeNI(engGross) - studentLoan(engGross, slPlan) - postgraduateLoan(engGross, hasPgl);
-      const scoNet = scoGross - scotlandIncomeTax(scoGross) - employeeNI(scoGross) - studentLoan(scoGross, slPlan) - postgraduateLoan(scoGross, hasPgl);
+      const engNet = engGross - englandIncomeTax(engGross) - employeeNI(engGross) - studentLoan(engGross, slPlan) - postgraduateLoan(engGross, hasPgl) - employeePension(engGross);
+      const scoNet = scoGross - scotlandIncomeTax(scoGross) - employeeNI(scoGross) - studentLoan(scoGross, slPlan) - postgraduateLoan(scoGross, hasPgl) - employeePension(scoGross);
+      maxY = Math.max(maxY, engNet, scoNet);
+      points.push({ x, engY: engNet, scoY: scoNet });
+    } else if (mode === 'cost') {
+      const engNet = engGross - englandIncomeTax(engGross) - employeeNI(engGross) - studentLoan(engGross, slPlan) - postgraduateLoan(engGross, hasPgl) - employeePension(engGross);
+      const scoNet = scoGross - scotlandIncomeTax(scoGross) - employeeNI(scoGross) - studentLoan(scoGross, slPlan) - postgraduateLoan(scoGross, hasPgl) - employeePension(scoGross);
       maxY = Math.max(maxY, engNet, scoNet);
       points.push({ x, engY: engNet, scoY: scoNet });
     } else {
+      const engCost = engGross + employerNI(engGross) + apprenticeshipLevy(engGross, isLarge) + employerPension(engGross);
+      const scoCost = scoGross + employerNI(scoGross) + apprenticeshipLevy(scoGross, isLarge) + employerPension(scoGross);
       maxY = Math.max(maxY, engCost, scoCost);
       points.push({ x, engY: engCost, scoY: scoCost });
     }
@@ -744,6 +1120,8 @@ function drawChart(slPlan, hasPgl, currentInput) {
   const titleEl = $('chart-section').querySelector('h2');
   titleEl.textContent = mode === 'gross'
     ? 'Take-Home Pay by Gross Salary'
+    : mode === 'cost'
+    ? 'Take-Home Pay by Total Employment Cost'
     : 'Total Employment Cost by Take-Home Pay';
 
   Object.assign(chartData, { points, niceMax, maxX, pad, W, H, plotW, plotH, mode, step });
@@ -760,8 +1138,8 @@ function renderChart(currentInput, hoverX) {
 
   function xPos(v) { return pad.left + (v / maxX) * plotW; }
   function yPos(v) { return pad.top + plotH - (v / niceMax) * plotH; }
-  const xLabel = mode === 'gross' ? 'Gross salary' : 'Desired take-home pay';
-  const yLabel = mode === 'gross' ? 'Take-home pay' : 'Total employment cost';
+  const xLabel = mode === 'gross' ? 'Gross salary' : mode === 'cost' ? 'Total employment cost' : 'Desired take-home pay';
+  const yLabel = mode === 'gross' ? 'Take-home pay' : mode === 'cost' ? 'Take-home pay' : 'Total employment cost';
 
   ctx.clearRect(0, 0, W, H);
 
@@ -785,7 +1163,14 @@ function renderChart(currentInput, hoverX) {
   }
 
   ctx.textAlign = 'center';
-  const xInterval = 10000;
+  // Pick x-axis interval so labels don't overlap (~70px minimum gap)
+  const minLabelGap = 70;
+  const maxLabels = Math.floor(plotW / minLabelGap);
+  const candidateIntervals = [5000, 10000, 20000, 25000, 50000, 100000];
+  let xInterval = candidateIntervals[candidateIntervals.length - 1];
+  for (const ci of candidateIntervals) {
+    if (Math.floor(maxX / ci) <= maxLabels) { xInterval = ci; break; }
+  }
   for (let v = 0; v <= maxX; v += xInterval) {
     const x = xPos(v);
     ctx.beginPath();
@@ -882,8 +1267,8 @@ function renderChart(currentInput, hoverX) {
     const base = Math.min(p.engY, p.scoY);
     const pct = base > 0 ? ((diff / base) * 100).toFixed(1) : '0.0';
 
-    const inputLabel = mode === 'gross' ? 'Gross salary' : 'Take-home';
-    const valLabel = mode === 'gross' ? 'Take-home' : 'Emp. cost';
+    const inputLabel = mode === 'gross' ? 'Gross salary' : mode === 'cost' ? 'Emp. cost' : 'Take-home';
+    const valLabel = mode === 'gross' ? 'Take-home' : mode === 'cost' ? 'Take-home' : 'Emp. cost';
     const lines = [
       `${inputLabel}: ${fmt(p.x)}`,
       `England ${valLabel}: ${fmt(p.engY)}`,
@@ -891,6 +1276,9 @@ function renderChart(currentInput, hoverX) {
     ];
     if (diff >= 1) {
       if (mode === 'gross') {
+        const worse = p.engY < p.scoY ? 'England' : 'Scotland';
+        lines.push(`${worse} \u2212${fmt(diff)} (${pct}%)`);
+      } else if (mode === 'cost') {
         const worse = p.engY < p.scoY ? 'England' : 'Scotland';
         lines.push(`${worse} \u2212${fmt(diff)} (${pct}%)`);
       } else {
@@ -946,16 +1334,325 @@ $('chart').addEventListener('mouseleave', () => {
   renderChart(currentInput, -1);
 });
 
+// ── Year comparison chart ──
+
+let yearChartData = { points: [], hoverIdx: -1 };
+
+function drawYearChart(inputVal, slPlan, hasPgl, isLarge) {
+  const mode = getMode();
+  const canvas = $('yearChart');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  const W = rect.width - 48;
+  const H = 350;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+
+  // Title
+  const titleEl = $('year-chart-title');
+  titleEl.textContent = mode === 'gross'
+    ? 'Take-Home Pay by Tax Year'
+    : mode === 'cost'
+    ? 'Take-Home Pay by Tax Year'
+    : 'Total Employment Cost by Tax Year';
+
+  const yearKeys = Object.keys(TAX_YEARS);
+  const points = [];
+
+  for (const yk of yearKeys) {
+    _yearOverride = yk;
+    const c = TAX_YEARS[yk];
+
+    // Check if the selected student loan plan exists for this year
+    const effectivePlan = (slPlan !== 'none' && c.slThresholds[slPlan]) ? slPlan : 'none';
+
+    let engGross, scoGross;
+    if (mode === 'gross') {
+      engGross = inputVal;
+      scoGross = inputVal;
+    } else if (mode === 'cost') {
+      engGross = inputVal === 0 ? 0 : findGrossFromCost(inputVal, englandIncomeTax, effectivePlan, hasPgl, isLarge);
+      scoGross = inputVal === 0 ? 0 : findGrossFromCost(inputVal, scotlandIncomeTax, effectivePlan, hasPgl, isLarge);
+    } else {
+      engGross = inputVal === 0 ? 0 : findGross(inputVal, englandIncomeTax, effectivePlan, hasPgl);
+      scoGross = inputVal === 0 ? 0 : findGross(inputVal, scotlandIncomeTax, effectivePlan, hasPgl);
+    }
+
+    const engTax = calcIncomeTax(engGross, c.englandBands).totalTax;
+    const scoTax = calcIncomeTax(scoGross, c.scotlandBands).totalTax;
+    const engNI = employeeNI(engGross);
+    const scoNI = employeeNI(scoGross);
+    const engSL = studentLoan(engGross, effectivePlan);
+    const scoSL = studentLoan(scoGross, effectivePlan);
+    const engPGL = postgraduateLoan(engGross, hasPgl);
+    const scoPGL = postgraduateLoan(scoGross, hasPgl);
+    const engEmpPen = employeePension(engGross);
+    const scoEmpPen = employeePension(scoGross);
+    const engNet = engGross - engTax - engNI - engSL - engPGL - engEmpPen;
+    const scoNet = scoGross - scoTax - scoNI - scoSL - scoPGL - scoEmpPen;
+    const engErNI = employerNI(engGross);
+    const scoErNI = employerNI(scoGross);
+    const engLevy = apprenticeshipLevy(engGross, isLarge);
+    const scoLevy = apprenticeshipLevy(scoGross, isLarge);
+    const engErPen = employerPension(engGross);
+    const scoErPen = employerPension(scoGross);
+    const engCost = engGross + engErNI + engLevy + engErPen;
+    const scoCost = scoGross + scoErNI + scoLevy + scoErPen;
+
+    let engY, scoY;
+    if (mode === 'gross' || mode === 'cost') {
+      engY = engNet;
+      scoY = scoNet;
+    } else {
+      engY = engCost;
+      scoY = scoCost;
+    }
+
+    points.push({ label: c.label, engY, scoY });
+  }
+
+  _yearOverride = null;
+
+  yearChartData.points = points;
+
+  renderYearChart(-1);
+}
+
+function renderYearChart(hoverIdx) {
+  const { points } = yearChartData;
+  if (!points.length) return;
+
+  const canvas = $('yearChart');
+  const dpr = window.devicePixelRatio || 1;
+  const W = parseInt(canvas.style.width);
+  const H = parseInt(canvas.style.height);
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  const pad = { top: 20, right: 20, bottom: 50, left: 70 };
+  const plotW = W - pad.left - pad.right;
+  const plotH = H - pad.top - pad.bottom;
+  const n = points.length;
+
+  let maxY = 0;
+  let minY = Infinity;
+  for (const p of points) {
+    maxY = Math.max(maxY, p.engY, p.scoY);
+    minY = Math.min(minY, p.engY, p.scoY);
+  }
+  // Add some margin
+  const range = maxY - minY || 1;
+  const chartMin = Math.max(0, minY - range * 0.15);
+  const chartMax = maxY + range * 0.1;
+  const niceMin = Math.floor(chartMin / 1000) * 1000;
+  const niceMax = Math.ceil(chartMax / 1000) * 1000;
+
+  function xPos(i) { return pad.left + (i / (n - 1)) * plotW; }
+  function yPos(v) { return pad.top + plotH - ((v - niceMin) / (niceMax - niceMin)) * plotH; }
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Grid
+  ctx.strokeStyle = '#e8e8e8';
+  ctx.lineWidth = 1;
+  ctx.fillStyle = '#888';
+  ctx.font = '11px -apple-system, BlinkMacSystemFont, sans-serif';
+  ctx.textAlign = 'right';
+
+  const ySteps = 5;
+  const yInterval = (niceMax - niceMin) / ySteps;
+  for (let i = 0; i <= ySteps; i++) {
+    const val = niceMin + i * yInterval;
+    const y = yPos(val);
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(W - pad.right, y);
+    ctx.stroke();
+    ctx.fillText('£' + (val / 1000).toFixed(0) + 'k', pad.left - 8, y + 4);
+  }
+
+  // X labels
+  ctx.textAlign = 'center';
+  for (let i = 0; i < n; i++) {
+    const x = xPos(i);
+    ctx.fillStyle = '#888';
+    ctx.fillText(points[i].label, x, H - pad.bottom + 18);
+  }
+
+  // Y-axis label
+  const mode = getMode();
+  const yLabel = (mode === 'gross' || mode === 'cost') ? 'Take-home pay' : 'Total employment cost';
+  ctx.fillStyle = '#555';
+  ctx.font = '12px -apple-system, BlinkMacSystemFont, sans-serif';
+  ctx.save();
+  ctx.translate(14, pad.top + plotH / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.textAlign = 'center';
+  ctx.fillText(yLabel, 0, 0);
+  ctx.restore();
+
+  // Lines
+  function drawLine(color, key) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    for (let i = 0; i < n; i++) {
+      const x = xPos(i);
+      const y = yPos(points[i][key]);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    // Dots
+    for (let i = 0; i < n; i++) {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(xPos(i), yPos(points[i][key]), 3.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  drawLine('#e63946', 'engY');
+  drawLine('#2563eb', 'scoY');
+
+  // Legend
+  const legY = pad.top + 10;
+  const legX = pad.left + 10;
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = '#e63946';
+  ctx.beginPath(); ctx.moveTo(legX, legY); ctx.lineTo(legX + 24, legY); ctx.stroke();
+  ctx.fillStyle = '#333';
+  ctx.font = '12px -apple-system, BlinkMacSystemFont, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('England', legX + 30, legY + 4);
+  ctx.strokeStyle = '#2563eb';
+  ctx.beginPath(); ctx.moveTo(legX, legY + 20); ctx.lineTo(legX + 24, legY + 20); ctx.stroke();
+  ctx.fillText('Scotland', legX + 30, legY + 24);
+
+  // Hover tooltip
+  if (hoverIdx >= 0 && hoverIdx < n) {
+    const p = points[hoverIdx];
+    const hx = xPos(hoverIdx);
+
+    // Vertical line
+    ctx.strokeStyle = '#aaa';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([2, 2]);
+    ctx.beginPath();
+    ctx.moveTo(hx, pad.top);
+    ctx.lineTo(hx, pad.top + plotH);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Highlight dots
+    ctx.fillStyle = '#e63946';
+    ctx.beginPath(); ctx.arc(hx, yPos(p.engY), 5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#2563eb';
+    ctx.beginPath(); ctx.arc(hx, yPos(p.scoY), 5, 0, Math.PI * 2); ctx.fill();
+
+    const diff = Math.abs(p.engY - p.scoY);
+    const base = Math.min(p.engY, p.scoY);
+    const pct = base > 0 ? ((diff / base) * 100).toFixed(1) : '0.0';
+    const valLabel = (mode === 'gross' || mode === 'cost') ? 'Take-home' : 'Emp. cost';
+
+    const lines = [
+      p.label,
+      `England ${valLabel}: ${fmt(p.engY)}`,
+      `Scotland ${valLabel}: ${fmt(p.scoY)}`,
+    ];
+    if (diff >= 1) {
+      if (mode === 'gross' || mode === 'cost') {
+        const worse = p.engY < p.scoY ? 'England' : 'Scotland';
+        lines.push(`${worse} \u2212${fmt(diff)} (${pct}%)`);
+      } else {
+        const dearer = p.engY > p.scoY ? 'England' : 'Scotland';
+        lines.push(`${dearer} +${fmt(diff)} (${pct}%)`);
+      }
+    }
+
+    ctx.font = '11px -apple-system, BlinkMacSystemFont, sans-serif';
+    const lineH = 16;
+    const boldIdx = 3;
+    const tw = Math.max(...lines.map(l => ctx.measureText(l).width));
+    const boxW = tw + 20;
+    const boxH = lines.length * lineH + 12;
+
+    let tx = hx + 12;
+    if (tx + boxW > W - pad.right) tx = hx - boxW - 12;
+    let ty = Math.min(yPos(p.engY), yPos(p.scoY)) - boxH / 2;
+    ty = Math.max(pad.top, Math.min(ty, pad.top + plotH - boxH));
+
+    ctx.fillStyle = 'rgba(255,255,255,0.95)';
+    ctx.strokeStyle = '#ccc';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(tx, ty, boxW, boxH, 6);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.textAlign = 'left';
+    for (let i = 0; i < lines.length; i++) {
+      ctx.fillStyle = '#333';
+      ctx.font = (i === boldIdx) ? 'bold 11px -apple-system, BlinkMacSystemFont, sans-serif' : '11px -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.fillText(lines[i], tx + 10, ty + 14 + i * lineH);
+    }
+  }
+}
+
+// Year chart hover
+$('yearChart').addEventListener('mousemove', (e) => {
+  const { points } = yearChartData;
+  if (!points.length) return;
+  const canvas = $('yearChart');
+  const W = parseInt(canvas.style.width);
+  const pad = { top: 20, right: 20, bottom: 50, left: 70 };
+  const plotW = W - pad.left - pad.right;
+  const n = points.length;
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const ratio = (mx - pad.left) / plotW;
+  const idx = Math.round(ratio * (n - 1));
+  if (idx >= 0 && idx < n) {
+    renderYearChart(idx);
+  }
+});
+
+$('yearChart').addEventListener('mouseleave', () => {
+  renderYearChart(-1);
+});
+
 // ── Events ──
 
 $('salaryInput').addEventListener('input', calculate);
+
+// Year toggle
+document.querySelectorAll('[data-year]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-year]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const c = TAX_YEARS[btn.dataset.year];
+    $('subtitle').innerHTML = c.label + ' Tax Year &mdash; England vs Scotland';
+    // Hide plans for years where they don't apply
+    const hasPlan4 = '4' in c.slThresholds;
+    $('plan4-wrapper').style.display = hasPlan4 ? '' : 'none';
+    $('plan5-wrapper').style.display = c.hasPlan5 ? '' : 'none';
+    const activePlan = document.querySelector('[data-plan].active').dataset.plan;
+    if ((!hasPlan4 && activePlan === '4') || (!c.hasPlan5 && activePlan === '5')) {
+      document.querySelectorAll('[data-plan]').forEach(b => b.classList.remove('active'));
+      document.querySelector('[data-plan="none"]').classList.add('active');
+    }
+    calculate();
+  });
+});
 
 // Mode toggle
 document.querySelectorAll('[data-mode]').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('[data-mode]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    $('salaryLabel').textContent = btn.dataset.mode === 'gross' ? 'Gross salary' : 'Desired take-home pay';
+    const labels = { takehome: 'Desired take-home pay (per year)', gross: 'Gross salary (per year)', cost: 'Total employment cost (per year)' };
+    $('salaryLabel').textContent = labels[btn.dataset.mode];
     calculate();
   });
 });
@@ -976,6 +1673,12 @@ document.querySelectorAll('[data-pgl]').forEach(btn => {
     btn.classList.add('active');
     calculate();
   });
+});
+
+// Small employer toggle
+$('small-employer').addEventListener('click', () => {
+  $('small-employer').classList.toggle('active');
+  calculate();
 });
 
 calculate();
